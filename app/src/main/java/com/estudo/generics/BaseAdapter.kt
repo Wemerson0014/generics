@@ -1,28 +1,31 @@
 package com.estudo.generics
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.textview.MaterialTextView
 
-class BaseAdapter : RecyclerView.Adapter<BaseAdapter.BaseViewHolder>() {
+class BaseAdapter<T : BaseAdapter.BaseViewHolder<U>, U>(private val ViewHolderLauncher: (ViewGroup) -> T) :
+    RecyclerView.Adapter<T>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_user, parent, false)
+    var items: MutableList<U> = mutableListOf()
 
-        return BaseViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): T {
+        return ViewHolderLauncher(parent)
     }
 
-    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        holder.content.text = position.toString()
+    override fun onBindViewHolder(holder: T, position: Int) {
+        holder.bind(items[position])
     }
 
     override fun getItemCount(): Int {
-        return 100
+        return items.size
     }
 
-    class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val content: MaterialTextView = itemView.findViewById(R.id.userName)
+    abstract class BaseViewHolder<U>(layout: Int, viewGroup: ViewGroup) : RecyclerView.ViewHolder(
+        LayoutInflater.from(viewGroup.context).inflate(layout, viewGroup, false)
+    ) {
+
+        abstract fun bind(item: U)
+
     }
 }
